@@ -1,0 +1,44 @@
+﻿.AdvancedFilter_filterLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #108de5;
+  padding: 0 10px;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  height: 30px;
+  cursor: pointer;
+  color: #fff;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+
+.dropdown-container {
+    max-height: 0; /* Start closed */
+    transition: max-height 0.5s ease-out, opacity 0.3s ease-out;
+    opacity: 0;
+  }
+  
+  .dropdown-container.open {
+    max-height: 400px; /* Adjust this value to the height of your content */
+    opacity: 1;
+  }
+  
+  .dropdown-container.closed {
+    max-height: 0;
+    opacity: 0;
+  }
+  
+  .dropdown-content {
+    padding: 10px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+
+  .open-icon,
+.closed-icon {
+  transition: transform 0.3s ease;
+}
+  

@@ -1,0 +1,18 @@
+﻿.search-result-buttons {
+  width: 80px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid #8e9dad;
+  background: transparent;
+  color: #8e9dad;
+  font-size: 12px;
+}
+
+.active-search-result-button,
+.search-result-buttons:hover {
+  border: 1px solid #108de5;
+  background: #108de5;
+  color: #fff;
+}
+
+
