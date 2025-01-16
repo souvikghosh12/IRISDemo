@@ -11,6 +11,8 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import Image from "next/image";
+import { useAuthContext } from "../AuthContext/Authcontext";
+import Loader from "./Loader";
 
 function PeopleData() {
   const [page, setPage] = useState<number>(1);
@@ -18,11 +20,60 @@ function PeopleData() {
   const [rowsData, setRowsData] = useState<any[]>([]);
   const [total_count, setTotal_count] = useState<number>(0);
   const [count, setCount] = useState<number>(0);
+  const {
+    selectedsearchResultValue,
+    SelectedData,
+    selectedOptions,
+    SearchedValue,
+  } = useAuthContext();
+
+  const [loader, setLoader] = useState<boolean>(false);
 
   const fetchPeopleData = (currentPage: number, currentRowsPerPage: number) => {
+    const findData = selectedOptions[selectedsearchResultValue];
+
     const formData = new FormData();
     formData.append("offset", ((currentPage - 1) * currentRowsPerPage) as any);
     formData.append("limit", currentRowsPerPage as any);
+    formData.append("search", SearchedValue ? SearchedValue.toString() : "");
+    formData.append(
+      "country_id",
+      findData?.Country === "none" ? "" : findData?.Country.toString()
+    );
+
+    formData.append(
+      "risk_score",
+      findData?.RiskScore.toString() === "none"
+        ? ""
+        : findData?.RiskScore.toString()
+    );
+
+    formData.append(
+      "classification",
+      findData?.Classification.toString() === "none"
+        ? ""
+        : findData?.Classification.toString()
+    );
+
+    formData.append(
+      "orderby_field",
+      SelectedData === "Advanced Sorting"
+        ? "risk_score"
+        : SelectedData?.includes("Risk")
+        ? "risk_score"
+        : "country__name"
+    );
+
+    formData.append(
+      "orderby_type",
+      SelectedData === "Advanced Sorting"
+        ? ""
+        : SelectedData?.includes("Asc")
+        ? "asc"
+        : "desc"
+    );
+
+    setLoader(true);
 
     axios
       .post("http://20.217.64.227/api/entities", formData, {
@@ -38,6 +89,9 @@ function PeopleData() {
       })
       .catch((error) => {
         console.error("Error:", error);
+      })
+      .finally(() => {
+        setLoader(false);
       });
   };
 
@@ -58,7 +112,14 @@ function PeopleData() {
 
   useEffect(() => {
     fetchPeopleData(page, rowsPerPage);
-  }, [page, rowsPerPage]);
+  }, [
+    page,
+    rowsPerPage,
+    selectedOptions,
+    SelectedData,
+    SearchedValue,
+    selectedsearchResultValue,
+  ]);
 
   return (
     <Paper sx={{ padding: 2, backgroundColor: "transparent", color: "#fff" }}>
@@ -86,7 +147,7 @@ function PeopleData() {
           }}
         >
           <Pagination
-            count={Math.ceil(total_count / rowsPerPage)}
+            count={Math.ceil(count / rowsPerPage)}
             page={page}
             onChange={handleChangePage}
             size="small"
@@ -133,41 +194,48 @@ function PeopleData() {
           </Select>
         </Box>
       </Box>
-      {rowsData.map((row, index) => (
-        <div
-          key={index}
-          className="flex justify-between hover:cursor-pointer align-top border pt-3 pb-3 glass-morfing-effect border-gray-600 mb-3 p-2 rounded-2xl"
-        >
-          <div className="flex gap-5">
-            <Image
-              src={row?.profile_image_url}
-              alt="Profile"
-              width={50}
-              height={50}
-              className="rounded-full"
-            />
-            <div className="mt-1">
-              <p className="font-[600] text-[#fff] text-[14px]">
-                {row?.phone_number}
-              </p>
-              <p className="flex gap-1 align-middle text-[#8E9DAD] text-[13px]">
-                <Image
-                  src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${row?.country?.alpha2_code}.svg`}
-                  alt="Profile"
-                  width={20}
-                  height={20}
-                />
-                {row?.country?.name}
-              </p>
+      {loader && (
+        <div className="relative top-[50%] left-[50%] transform translate-x-[-50%]  h-[50vh]">
+          <Loader />
+        </div>
+      )}
+
+      {!loader &&
+        rowsData.map((row, index) => (
+          <div
+            key={index}
+            className="flex justify-between hover:cursor-pointer align-top border pt-3 pb-3 glass-morfing-effect border-gray-600 mb-3 p-2 rounded-2xl"
+          >
+            <div className="flex gap-5">
+              <Image
+                src={row?.profile_image_url}
+                alt="Profile"
+                width={50}
+                height={50}
+                className="rounded-full"
+              />
+              <div className="mt-1">
+                <p className="font-[600] text-[#fff] text-[14px]">
+                  {row?.phone_number}
+                </p>
+                <p className="flex gap-1 align-middle text-[#8E9DAD] text-[13px]">
+                  <Image
+                    src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${row?.country?.alpha2_code}.svg`}
+                    alt="Profile"
+                    width={20}
+                    height={20}
+                  />
+                  {row?.country?.name}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1 mt-2">
+              <h3 className="font-[600] text-[#108de5] align-middle text-[13px] flex gap-1">
+                Learn More
+              </h3>
             </div>
           </div>
-          <div className="flex flex-col gap-1 mt-2">
-            <h3 className="font-[600] text-[#108de5] align-middle text-[13px] flex gap-1">
-              Learn More
-            </h3>
-          </div>
-        </div>
-      ))}
+        ))}
     </Paper>
   );
 }
