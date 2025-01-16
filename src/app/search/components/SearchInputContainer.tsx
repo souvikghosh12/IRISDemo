@@ -1,8 +1,45 @@
 ﻿import "@/app/search/components/css/SearchInputContainer.css";
+import { useAuthContext } from "../AuthContext/Authcontext";
+import axios from "axios";
 
 function SearchInputContainer() {
+  const { searchValue, setSearchValue,  setSearchedValue } =
+    useAuthContext();
+
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSearchedValue(searchValue);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value);
+
+    fetch("http://20.217.64.227/api/search-keyword", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Client-Secret": "asdfdsgvbrggre",
+      },
+      body: JSON.stringify({
+        search: e.target.value,
+        orderby_field: "",
+        orderby_type: "",
+        risk_score: "",
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
   return (
-    <form className="mt-[.6rem] mb-[.6rem] ml-3 mr-3 border border-gray-600  rounded flex items-center justify-between form-container-search-input">
+    <form
+      className="mt-[.6rem] mb-[.6rem] ml-3 mr-3 border border-gray-600  rounded flex items-center justify-between form-container-search-input"
+      onSubmit={handleSearch}
+    >
       <div className="relative full-width-flex-box">
         <input
           type="search"
@@ -10,6 +47,7 @@ function SearchInputContainer() {
           id=""
           className="search-input"
           placeholder="Search anything (message, group, users etc.)"
+          onChange={(e) => handleInputChange(e)}
         />
         <svg
           width="18"
