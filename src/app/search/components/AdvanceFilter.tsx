@@ -33,6 +33,11 @@ interface FilterOptionName {
   [key: string]: boolean;
 }
 
+interface DateRanges {
+  startDate: Date;
+  endDate: Date;
+}
+
 type SelectedSearchResultValue = keyof FilterState;
 function AdvanceFilter() {
   const [dropDownOpen, setDropDownOpen] = React.useState(false);
@@ -174,7 +179,7 @@ function AdvanceFilter() {
       ],
       Messages: [
         {
-          type: "Message",
+          type: "Messages",
           name: "Risk Score",
           options: [
             { name: "Less than 20%", value: "<20%" },
@@ -185,7 +190,7 @@ function AdvanceFilter() {
           ],
         },
         {
-          type: "Message",
+          type: "Messages",
           name: "Date Range",
         },
       ],
@@ -199,6 +204,8 @@ function AdvanceFilter() {
     setSelectedsearchResultValue,
     selectedOptions,
     setSelectedOptions,
+    SelectedData,
+    setSelectedData,
   } = useAuthContext();
 
   const [dropDownSubFilter, setDropDownSubFilter] =
@@ -280,20 +287,53 @@ function AdvanceFilter() {
     subFilter: SubFilter,
     option: Option
   ) => {
-    console.log(
-      selectedOptions[subFilter.type][subFilter.name?.replace(" ", "")],
-      option.value
-    );
-
     setSelectedOptions((prevOptions) => ({
       ...prevOptions,
       [subFilter.type]: {
-        ...prevOptions[subFilter.name],
+        ...prevOptions[subFilter.type],
         [e.target.name]: e.target.value,
       },
     }));
   };
 
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
+  const isAllFieldsSet = () => {
+    const isAllFieldsSet = Object.values(selectedOptions).every((category) =>
+      Object.values(category).every((value) => {
+        if (typeof value === "string" && value?.includes("none")) {
+          return true;
+        } else if (
+          typeof value === "object" &&
+          value !== null &&
+          "startDate" in value &&
+          "endDate" in value
+        ) {
+          return (
+            isToday(value.startDate as Date) && isToday(value.endDate as Date)
+          );
+        } else {
+          return false;
+        }
+      })
+    );
+
+    return isAllFieldsSet && SelectedData === "Advanced Sorting" ? false : true;
+  };
+
+  function convertDateRangesToDates(dateRanges: DateRanges): Date[] {
+    return {
+      startDate: dateRanges.startDate,
+      endDate: dateRanges.endDate,
+    } as any;
+  }
   return (
     <div className="w-100 relative">
       <div className="flex justify-between align-middle">
@@ -344,19 +384,68 @@ function AdvanceFilter() {
             </svg>
           )}
         </h3>
-        <AdvancedSorting />
+        <div className="flex gap-2 align-middle  justify-center items-center mr-3">
+          {isAllFieldsSet() && (
+            <div className="flex gap-1 h-[20px] justify-center align-middle text-[#108DE5] text-[12px] font-[500] cursor-pointer mt-3">
+              <p
+                className="flex gap-1 align-middle"
+                onClick={() => {
+                  setSelectedOptions({
+                    all: { RiskScore: "none" },
+                    People: {
+                      RiskScore: "none",
+                      Classification: "none",
+                      Country: "none",
+                    },
+                    Groups: {
+                      RiskScore: "none",
+                      Classification: "none",
+                      Members: "none",
+                    },
+                    Messages: {
+                      RiskScore: "none",
+                      DateRange: convertDateRangesToDates({
+                        startDate: new Date(),
+                        endDate: new Date(),
+                      }),
+                    },
+                  });
+                  setSelectedData("Advanced Sorting");
+                }}
+              >
+                Clear all
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="19px"
+                  height="19px"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    fill="none"
+                    stroke="#108DE5"
+                    strokeLinecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="m11.25 4.75l-6.5 6.5m0-6.5l6.5 6.5"
+                  ></path>
+                </svg>
+              </p>
+            </div>
+          )}
+          <AdvancedSorting />
+        </div>
       </div>
       <div
         className={`grid relative w-full  grid-cols-3 gap-1 justify-start mt-3 mb-3 mr-3 dropdown-container ${
           dropDownOpen ? "open" : "closed"
         }`}
+        ref={dropdownRef}
       >
         {AdvanceFilterSubFilter[selectedsearchResultValue]?.map(
           (subFilter: SubFilter) => (
             <div
               key={subFilter.name}
               className="cursor-pointer w-full flex flex-col gap-1  p-2"
-              ref={dropdownRef}
             >
               <p
                 className="font-[700] AdvancedFilter_filterLabel text-[12px]"
@@ -424,7 +513,6 @@ function AdvanceFilter() {
                 >
                   {subFilter?.name !== "Date Range" && (
                     <label
-                      htmlFor="none"
                       className={`cursor-pointer  p-[3px] rounded-[7px] text-[black] text-[12px] font-[500]  flex align-middle gap-2`}
                     >
                       <input
@@ -435,11 +523,12 @@ function AdvanceFilter() {
                             subFilter.name?.replace(" ", "")
                           ] === "none"
                         }
-                        name={subFilter.name?.replace(" ", "")}
+                        name={subFilter?.name?.replace(" ", "")}
                         onChange={(e) => {
                           setSelectedOptions((prevOptions) => ({
                             ...prevOptions,
                             [subFilter.type]: {
+                              ...prevOptions[subFilter.type],
                               [e.target.name]: e.target.value,
                             },
                           }));

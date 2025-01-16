@@ -30,7 +30,6 @@ interface AuthContextType {
   setSearchedValue: React.Dispatch<React.SetStateAction<string>>;
 }
 
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthContextProps {
@@ -43,9 +42,13 @@ interface RangeItem {
   key: string;
 }
 
+interface DateRange {
+  startDate: Date;
+  endDate: Date;
+}
 interface SelectedOptions {
   [key: string]: {
-    [key: string]: string | Date[];
+    [key: string]: string | { startDate: Date; endDate: Date };
   };
 }
 export const Authcontext = ({ children }: AuthContextProps) => {
@@ -62,15 +65,16 @@ export const Authcontext = ({ children }: AuthContextProps) => {
     all: { RiskScore: "none" },
     People: { RiskScore: "none", Classification: "none", Country: "none" },
     Groups: { RiskScore: "none", Classification: "none", Members: "none" },
-    Message: { RiskScore: "none", DateRange: [new Date(), new Date()] },
+    Messages: {
+      RiskScore: "none",
+      DateRange: { startDate: new Date(), endDate: new Date() },
+    },
   });
   const [searchedData, setSearchedData] = useState<any[]>([]);
   const [SearchedValue, setSearchedValue] = useState<string>("");
 
   const [searchValue, setSearchValue] = useState<string>("");
-   const [SelectedData, setSelectedData] =
-      useState<string>("Advanced Sorting");
-
+  const [SelectedData, setSelectedData] = useState<string>("Advanced Sorting");
 
   return (
     <AuthContext.Provider

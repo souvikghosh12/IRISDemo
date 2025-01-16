@@ -7,6 +7,7 @@ import React, { useEffect, useState } from "react";
 import CircularProgress from "./CircularProgress";
 import { useAuthContext } from "../AuthContext/Authcontext";
 import axios from "axios";
+import Loader from "./Loader";
 interface SearchResultData {
   all_result: any;
 }
@@ -16,14 +17,14 @@ function AllData() {
     setSelectedsearchResultValue,
     selectedOptions,
     SelectedData,
-    searchedData,
     SearchedValue,
   } = useAuthContext();
   const [searchAllData, setSearchAllData] = useState({});
+  const [loader, setLoader] = useState<boolean>(false);
 
   useEffect(() => {
     fetchAllData();
-  }, [selectedOptions, SelectedData, SearchedValue]);
+  }, [selectedOptions, SelectedData, SearchedValue, selectedsearchResultValue]);
 
   const fetchAllData = () => {
     const findData = selectedOptions[selectedsearchResultValue];
@@ -44,7 +45,7 @@ function AllData() {
         ? ""
         : findData?.RiskScore.toString()
     );
-
+    setLoader(true);
     axios
       .post("http://20.217.64.227/api/search-keyword", formData, {
         headers: {
@@ -59,6 +60,9 @@ function AllData() {
       })
       .catch((error) => {
         console.error("Error:", error);
+      })
+      .finally(() => {
+        setLoader(false);
       });
   };
 
@@ -71,7 +75,13 @@ function AllData() {
 
   return (
     <div className=" ml-3 mr-3 p-2">
+      {loader && (
+        <div className="relative top-[50%] left-[50%] transform translate-x-[-50%]  h-[50vh]">
+          <Loader />
+        </div>
+      )}
       {searchAllData &&
+        !loader &&
         (searchAllData as any)["entitys"]?.Result?.length > 0 &&
         Object.keys(searchAllData).includes("entitys") && (
           <div className="rounded-2xl">
@@ -143,6 +153,7 @@ function AllData() {
           </div>
         )}
       {searchAllData &&
+        !loader &&
         (searchAllData as any)["groups"]?.Result?.length > 0 &&
         Object.keys(searchAllData).includes("groups") && (
           <div className="rounded-2xl mt-3">
@@ -216,6 +227,7 @@ function AllData() {
           </div>
         )}
       {searchAllData &&
+        !loader &&
         (searchAllData as any)["messages"]?.Result?.length > 0 &&
         Object.keys(searchAllData).includes("messages") && (
           <div className="rounded-2xl mt-3 mb-3">

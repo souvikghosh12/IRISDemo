@@ -1,4 +1,5 @@
 ﻿module.exports = {
+  reactStrictMode: false,
   //... other configurations ...
   images: {
     domains: [

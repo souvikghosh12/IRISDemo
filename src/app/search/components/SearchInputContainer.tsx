@@ -1,14 +1,40 @@
 ﻿import "@/app/search/components/css/SearchInputContainer.css";
 import { useAuthContext } from "../AuthContext/Authcontext";
 import axios from "axios";
+import { Autocomplete, TextField, Popper } from "@mui/material";
+import { useEffect, useRef, useState } from "react";
 
 function SearchInputContainer() {
-  const { searchValue, setSearchValue,  setSearchedValue } =
-    useAuthContext();
+  const {
+    searchValue,
+    setSearchValue,
+    setSearchedValue,
+    setSelectedsearchResultValue,
+  } = useAuthContext();
+
+  const [options, setOptions] = useState<string[]>([]); // Manage the list of options for autocomplete
+  const dropdownRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setOptions([]);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSearchedValue(searchValue);
+    setSelectedsearchResultValue("all");
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,16 +55,38 @@ function SearchInputContainer() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
+        console.log(data?.data?.all_result);
+
+        // Extract and combine all the results from different categories
+        const allResults = [
+          ...(data?.data?.all_result?.entitys.Result || []),
+          ...(data?.data?.all_result?.groups.Result || []),
+          ...(data?.data?.all_result?.messages.Result || []),
+        ];
+
+        const newOptions = allResults.map((result: any) => {
+          return (
+            result?.phone_number || result?.group_name || result?.message_text
+          );
+        });
+
+        // Map the results into a format you want for the autocomplete options
+
+        console.log(newOptions, "allResults");
+
+        setOptions(newOptions);
+        // Update the options state
       })
       .catch((error) => {
         console.error("Error:", error);
       });
   };
+
   return (
     <form
-      className="mt-[.6rem] mb-[.6rem] ml-3 mr-3 border border-gray-600  rounded flex items-center justify-between form-container-search-input"
+      className="mt-[.6rem] mb-[.6rem] ml-3 mr-3 border border-gray-600 rounded flex items-center justify-between form-container-search-input"
       onSubmit={handleSearch}
+      ref={dropdownRef}
     >
       <div className="relative full-width-flex-box">
         <input
@@ -47,6 +95,7 @@ function SearchInputContainer() {
           id=""
           className="search-input"
           placeholder="Search anything (message, group, users etc.)"
+          value={searchValue}
           onChange={(e) => handleInputChange(e)}
         />
         <svg
@@ -62,6 +111,26 @@ function SearchInputContainer() {
             fill="#8E9DAD"
           />
         </svg>
+
+        {/* Autocomplete Dropdown positioned below the input */}
+        {options.length > 0 && (
+          <div className="absolute left-0 w-full bg-[#03090d] shadow-lg mt-1 z-10">
+            <ul className="list-none p-0 m-0 max-h-[200px] overflow-y-auto">
+              {options.map((option, index) => (
+                <li
+                  key={index}
+                  className="p-2 cursor-pointer hover:bg-[#1f2a38]"
+                  onClick={() => {
+                    setSearchValue(option);
+                    setOptions([]); // Clear options once a selection is made
+                  }}
+                >
+                  {option}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       <button type="submit" className="search-button">
