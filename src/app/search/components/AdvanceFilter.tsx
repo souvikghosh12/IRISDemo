@@ -5,7 +5,7 @@ import "@/app/search/components/css/AdvanceFilter.css";
 import Image from "next/image";
 import CustomCalendar from "./CustomCalendar";
 import AdvancedSorting from "./AdvancedSorting";
-import type { ChangeEvent } from "react";
+import dynamic from "next/dynamic";
 
 interface Option {
   name: string;
@@ -191,19 +191,16 @@ function AdvanceFilter() {
       ],
     });
 
-  const [selectedOptions, setSelectedOptions] = React.useState<{
-    [key: string]: {
-      [key: string]: string | Date[];
-    };
-  }>({
-    all: { RiskScore: "none" },
-    People: { RiskScore: "none", Classification: "none", Country: "none" },
-    Groups: { RiskScore: "none", Classification: "none", Members: "none" },
-    Message: { RiskScore: "none", DateRange: [new Date(), new Date()] },
-  });
   const [selectedSubFilter, setSelectedSubFilter] = React.useState<string>("");
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
 
-  const { selectedsearchResultValue ,setSelectedsearchResultValue} = useAuthContext();
+  const {
+    selectedsearchResultValue,
+    setSelectedsearchResultValue,
+    selectedOptions,
+    setSelectedOptions,
+  } = useAuthContext();
+
   const [dropDownSubFilter, setDropDownSubFilter] =
     React.useState<FilterOptionName>({
       "Risk Score": false,
@@ -243,6 +240,29 @@ function AdvanceFilter() {
       })
       .catch((error) => console.log(error));
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setDropDownSubFilter({
+          "Risk Score": false,
+          Classification: false,
+          Country: false,
+          Members: false,
+          "Date Range": false,
+        });
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   useEffect(() => {
     setDropDownSubFilter({
       "Risk Score": false,
@@ -275,10 +295,10 @@ function AdvanceFilter() {
   };
 
   return (
-    <div className="w-100">
+    <div className="w-100 relative">
       <div className="flex justify-between align-middle">
         <h3
-          className="flex w-fit mb-0 align-middle md:justify-start justify-center  gap-2 ml-3 mr-3 mt-5 text-[#1391EA] font-[700] text-[15px] cursor-pointer"
+          className="flex w-fit mb-0 align-middle md:justify-start justify-center  gap-2 ml-3 mr-3 mt-5 text-[#1391EA] font-[700] text-[12px] cursor-pointer"
           onClick={() => setDropDownOpen(!dropDownOpen)}
         >
           <span className="flex align-center md:justify-start justify-center  gap-1 leading-[20px] w-fit">
@@ -299,7 +319,7 @@ function AdvanceFilter() {
 
           {dropDownOpen ? (
             <svg
-              className="open-icon"
+              className="arrow-icon mt-[-2px]"
               width="30"
               height="30"
               viewBox="0 0 30 30"
@@ -310,7 +330,7 @@ function AdvanceFilter() {
             </svg>
           ) : (
             <svg
-              className="closed-icon"
+              className="arrow-icon mt-[-2px]"
               width="30"
               height="30"
               viewBox="0 0 30 30"
@@ -327,7 +347,7 @@ function AdvanceFilter() {
         <AdvancedSorting />
       </div>
       <div
-        className={`grid grid-cols-3 gap-1 justify-start mt-3 mb-3 mr-3 dropdown-container ${
+        className={`grid relative w-full  grid-cols-3 gap-1 justify-start mt-3 mb-3 mr-3 dropdown-container ${
           dropDownOpen ? "open" : "closed"
         }`}
       >
@@ -336,9 +356,10 @@ function AdvanceFilter() {
             <div
               key={subFilter.name}
               className="cursor-pointer w-full flex flex-col gap-1  p-2"
+              ref={dropdownRef}
             >
               <p
-                className="font-[700] AdvancedFilter_filterLabel"
+                className="font-[700] AdvancedFilter_filterLabel text-[12px]"
                 onClick={() => {
                   setSelectedSubFilter(subFilter.name);
                   setDropDownSubFilter((prevDropDownSubFilter) => {
@@ -362,7 +383,7 @@ function AdvanceFilter() {
                   <svg
                     className={`arrow-icon ${
                       dropDownSubFilter[subFilter.name] ? "rotate" : ""
-                    }`}
+                    } `}
                     width="30"
                     height="30"
                     viewBox="0 0 30 30"
@@ -390,78 +411,86 @@ function AdvanceFilter() {
                 )}
               </p>
               <div
-                className={`flex flex-col gap-2 ${
+                className={`flex flex-col gap-2 relative ${
                   subFilter?.name !== "Date Range" ? "w-full" : "w-fit"
-                } bg-[#fff] p-2 rounded dropdown-container ${
+                }    rounded dropdown-container ${
                   dropDownSubFilter[subFilter.name] ? "open" : "closed"
-                } max-h-[400px] transition-max-height duration  -300 overflow-y-scroll w-100 scrollbar-hide`}
+                } `}
               >
-                {subFilter?.name !== "Date Range" && (
-                  <label
-                    htmlFor="none"
-                    className={`cursor-pointer  p-[3px] rounded-[7px] text-[black] text-[14px] font-[400]  flex align-middle gap-2`}
-                  >
-                    <input
-                      type="radio"
-                      id="none"
-                      checked={
-                        selectedOptions[subFilter.type][
-                          subFilter.name?.replace(" ", "")
-                        ] === "none"
-                      }
-                      name={subFilter.name?.replace(" ", "")}
-                      onChange={(e) => {
-                        setSelectedOptions((prevOptions) => ({
-                          ...prevOptions,
-                          [subFilter.type]: { [e.target.name]: e.target.value },
-                        }));
-                      }}
-                      value="none"
-                    />
-                    None
-                  </label>
-                )}
-                {subFilter?.options?.map((option: Option) => (
-                  <>
+                <div
+                  className={`absolute p-2 top-0 left-0 z-10 max-h-[400px] transition-max-height duration-300 overflow-y-scroll w-100 scrollbar-hide rounded bg-[#fff] ${
+                    subFilter?.name !== "Date Range" ? "w-full" : "w-fit"
+                  }`}
+                >
+                  {subFilter?.name !== "Date Range" && (
                     <label
-                      key={option.value}
-                      htmlFor={option.value}
-                      className={`cursor-pointer  p-[3px] rounded-[7px] text-[black] text-[14px] font-[400]  flex align-middle gap-2`}
+                      htmlFor="none"
+                      className={`cursor-pointer  p-[3px] rounded-[7px] text-[black] text-[12px] font-[500]  flex align-middle gap-2`}
                     >
                       <input
                         type="radio"
-                        id={option.value}
-                        name={subFilter.name?.replace(" ", "")}
-                        value={option.value}
+                        id="none"
                         checked={
                           selectedOptions[subFilter.type][
                             subFilter.name?.replace(" ", "")
-                          ] === option.value
+                          ] === "none"
                         }
+                        name={subFilter.name?.replace(" ", "")}
                         onChange={(e) => {
-                          handleChange(e, subFilter, option);
+                          setSelectedOptions((prevOptions) => ({
+                            ...prevOptions,
+                            [subFilter.type]: {
+                              [e.target.name]: e.target.value,
+                            },
+                          }));
                         }}
+                        value="none"
                       />
-                      {option?.img && (
-                        <Image
-                          src={option.img || ""}
-                          alt={option.name}
-                          width={20}
-                          height={20}
-                        />
-                      )}
-                      {option.name}
+                      None
                     </label>
-                  </>
-                ))}
-                {subFilter?.name === "Date Range" && (
-                  <CustomCalendar
-                    type={subFilter.type}
-                    name={subFilter.name}
-                    selectedOptions={selectedOptions}
-                    setSelectedOptions={setSelectedOptions}
-                  />
-                )}
+                  )}
+                  {subFilter?.options?.map((option: Option) => (
+                    <>
+                      <label
+                        key={option.value}
+                        htmlFor={option.value}
+                        className={`cursor-pointer  p-[3px] rounded-[7px] text-[black] text-[12px] font-[500]  flex align-middle gap-2`}
+                      >
+                        <input
+                          type="radio"
+                          id={option.value}
+                          name={subFilter.name?.replace(" ", "")}
+                          value={option.value}
+                          checked={
+                            selectedOptions[subFilter.type][
+                              subFilter.name?.replace(" ", "")
+                            ] === option.value
+                          }
+                          onChange={(e) => {
+                            handleChange(e, subFilter, option);
+                          }}
+                        />
+                        {option?.img && (
+                          <Image
+                            src={option.img || ""}
+                            alt={option.name}
+                            width={20}
+                            height={20}
+                          />
+                        )}
+                        {option.name}
+                      </label>
+                    </>
+                  ))}
+                  {subFilter?.name === "Date Range" && (
+                    <CustomCalendar
+                      type={subFilter.type}
+                      name={subFilter.name}
+                      selectedOptions={selectedOptions}
+                      setSelectedOptions={setSelectedOptions}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           )
@@ -471,4 +500,4 @@ function AdvanceFilter() {
   );
 }
 
-export default AdvanceFilter;
+export default dynamic(() => Promise.resolve(AdvanceFilter), { ssr: false });

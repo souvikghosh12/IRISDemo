@@ -1,5 +1,9 @@
-﻿import React, { useEffect } from "react";
+﻿"use client";
+import React, { useEffect, useRef } from "react";
 import { useAuthContext } from "../AuthContext/Authcontext";
+import { motion, AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
+
 type FilterOptions = {
   all: string[];
   People: string[];
@@ -13,8 +17,6 @@ interface FilterOptionsInterface {
 
 function AdvancedSorting() {
   const [showDropdown, setShowDropdown] = React.useState<boolean>(false);
-  const [SelectedData, setSelectedData] =
-    React.useState<string>("Advanced Sorting");
 
   const [filterOptions, setFilterOptions] = React.useState<FilterOptions>({
     all: ["Risk Score Asc", "Risk Score Desc"],
@@ -32,18 +34,40 @@ function AdvancedSorting() {
     ],
     Messages: ["Risk Score Asc", "Risk Score Desc", "Date Asc", "Date Desc"],
   });
-  const { selectedsearchResultValue, setSelectedsearchResultValue } =
-    useAuthContext();
+  const {
+    selectedsearchResultValue,
+    SelectedData,
+    setSelectedData,
+    setSelectedsearchResultValue,
+  } = useAuthContext();
 
   useEffect(() => {
     setShowDropdown(false);
     setSelectedData("Advanced Sorting");
   }, [selectedsearchResultValue, setSelectedsearchResultValue]);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <div>
-      <div className="relative w-full">
+      <div className="relative w-full" ref={dropdownRef}>
         <h3
-          className="flex w-fit mb-0 align-middle md:justify-start justify-center  gap-2 ml-3 mr-3 mt-5 text-[#1391EA] font-[700] text-[15px] cursor-pointer"
+          className="flex w-fit mb-0 align-middle md:justify-start justify-center  gap-2 ml-3 mr-3 mt-5 text-[#1391EA] font-[700] text-[12px] cursor-pointer"
           onClick={() => setShowDropdown(!showDropdown)}
         >
           <span className="flex align-center md:justify-start justify-center  gap-1 leading-[20px] w-fit">
@@ -57,9 +81,9 @@ function AdvancedSorting() {
                 <path
                   fill="none"
                   stroke="#108DE5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="1.5px"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5px"
                   d="M11 10h7m-7 4h5m-5 4h3M11 6h10M7 18.813C6.607 19.255 5.56 21 5 21m-2-2.187C3.393 19.255 4.44 21 5 21m0 0v-6M3 5.188C3.393 4.745 4.44 3 5 3m2 2.188C6.607 4.745 5.56 3 5 3m0 0v6"
                   color="#108DE5"
                 ></path>
@@ -95,35 +119,38 @@ function AdvancedSorting() {
           )}
         </h3>
 
-        <div
-          className={`dropdown-container w-full absolute top-5 flex flex-col pb-2 pt-2 bg-white left-0 z-10 text-[black] ${
-            showDropdown ? "open" : "closed"
-          }`}
-        >
-          {(filterOptions as any)[selectedsearchResultValue].map(
-            (item: string, index: number) => (
-              <span
-                key={index}
-                onClick={() => {
-                  setSelectedData(item);
-                  setShowDropdown(false);
-                }}
-                className="hover:bg-gray-200 hover:cursor-pointer pl-3 pr-3 pt-1 pb-1"
-              >
-                {item}
-              </span>
-            )
+        <AnimatePresence>
+          {showDropdown && (
+            <motion.div
+              className="dropdown-container w-full absolute top-5 flex flex-col pb-2 pt-2 bg-white left-0 z-10 text-[black]"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              style={{ background: "white" }}
+            >
+              {(filterOptions as any)[selectedsearchResultValue].map(
+                (item: string, index: number) => (
+                  <span
+                    key={index}
+                    onClick={() => {
+                      setSelectedData(item);
+                      setShowDropdown(false);
+                    }}
+                    className="hover:bg-gray-200 hover:cursor-pointer pl-3 pr-3 pt-1 pb-1 bg-white"
+                  >
+                    {item}
+                  </span>
+                )
+              )}
+            </motion.div>
           )}
-          {/* <span className="hover:bg-gray-200 hover:cursor-pointer pl-3 pr-3 pt-1 pb-1">
-            Risk Score Asc
-          </span>
-          <span className="hover:bg-gray-200 hover:cursor-pointer pl-3 pr-3 pb-1 pt-1">
-            Risk Score Desc
-          </span> */}
-        </div>
+        </AnimatePresence>
       </div>
     </div>
   );
 }
 
-export default AdvancedSorting;
+export default dynamic(() => Promise.resolve(AdvancedSorting), {
+  ssr: false,
+});
