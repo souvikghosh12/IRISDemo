@@ -31,6 +31,7 @@ function Messages() {
     SelectedData,
     selectedOptions,
     SearchedValue,
+    setOnclickedRightSideData,
   } = useAuthContext();
 
   const [loader, setLoader] = useState<boolean>(false);
@@ -241,6 +242,14 @@ function Messages() {
           <div
             key={index}
             className="flex justify-between align-top border pt-3 pb-3 glass-morfing-effect border-gray-600 mb-3 p-2 rounded-2xl"
+          
+            onClick={() => {
+              setOnclickedRightSideData((prev) => ({
+                ...prev,
+                params: "Messages",
+                id: row?.id,
+              }));
+            }}
           >
             <div className="">
               <div className="">

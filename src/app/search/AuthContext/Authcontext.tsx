@@ -28,6 +28,8 @@ interface AuthContextType {
   setSelectedData: React.Dispatch<React.SetStateAction<string>>;
   SearchedValue: string;
   setSearchedValue: React.Dispatch<React.SetStateAction<string>>;
+  onclickedRightSideData: onclickedRightSideDatas;
+  setOnclickedRightSideData: React.Dispatch<React.SetStateAction<onclickedRightSideDatas>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,6 +42,11 @@ interface RangeItem {
   startDate: Date;
   endDate: Date;
   key: string;
+}
+
+interface onclickedRightSideDatas{
+  params: string;
+  id: string;
 }
 
 interface DateRange {
@@ -75,6 +82,10 @@ export const Authcontext = ({ children }: AuthContextProps) => {
 
   const [searchValue, setSearchValue] = useState<string>("");
   const [SelectedData, setSelectedData] = useState<string>("Advanced Sorting");
+  const [onclickedRightSideData, setOnclickedRightSideData] = useState<onclickedRightSideDatas>({
+    params: "",
+    id: "",
+  });
 
   return (
     <AuthContext.Provider
@@ -94,6 +105,8 @@ export const Authcontext = ({ children }: AuthContextProps) => {
           setSelectedData,
           SearchedValue,
           setSearchedValue,
+          onclickedRightSideData,
+          setOnclickedRightSideData,
         } as any
       }
     >

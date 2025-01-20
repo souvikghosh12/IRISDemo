@@ -29,6 +29,7 @@ function GroupesData() {
     SelectedData,
     selectedOptions,
     SearchedValue,
+    setOnclickedRightSideData,
   } = useAuthContext();
 
   const [loader, setLoader] = useState<boolean>(false);
@@ -220,6 +221,13 @@ function GroupesData() {
           <div
             key={index}
             className="flex justify-between align-top border hover:cursor-pointer pt-3 pb-3 glass-morfing-effect border-gray-600 mb-3 p-2 rounded-2xl"
+            onClick={() => {
+              setOnclickedRightSideData((prev) => ({
+                ...prev,
+                params: "Groups",
+                id: row?.id,
+              }));
+            }}
           >
             <div className="flex gap-5">
               <Image

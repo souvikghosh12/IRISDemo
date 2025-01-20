@@ -47,7 +47,7 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
           strokeWidth={strokeWidth}
           fill="transparent"
           strokeDasharray={circumference}
-          strokeDashoffset={offset}
+          strokeDashoffset={offset || 0}
           style={{
             transition: "stroke-dashoffset 0.5s ease, stroke 0.5s ease",
           }}
