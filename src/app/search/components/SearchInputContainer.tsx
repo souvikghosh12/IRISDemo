@@ -1,7 +1,5 @@
 ﻿import "@/app/search/components/css/SearchInputContainer.css";
 import { useAuthContext } from "../AuthContext/Authcontext";
-import axios from "axios";
-import { Autocomplete, TextField, Popper } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 
 function SearchInputContainer() {
@@ -39,19 +37,14 @@ function SearchInputContainer() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
-
+    const formData = new FormData();
+    formData.append("search", e.target.value);
     fetch("http://20.217.64.227/api/search-keyword", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         "Client-Secret": "asdfdsgvbrggre",
       },
-      body: JSON.stringify({
-        search: e.target.value,
-        orderby_field: "",
-        orderby_type: "",
-        risk_score: "",
-      }),
+      body: formData,
     })
       .then((response) => response.json())
       .then((data) => {
@@ -71,8 +64,6 @@ function SearchInputContainer() {
         });
 
         // Map the results into a format you want for the autocomplete options
-
-        console.log(newOptions, "allResults");
 
         setOptions(newOptions);
         // Update the options state
@@ -120,9 +111,18 @@ function SearchInputContainer() {
                 <li
                   key={index}
                   className="p-2 cursor-pointer hover:bg-[#1f2a38]"
-                  onClick={() => {
+                  value={option}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const mockEvent = {
+                      target: {
+                        value: option,
+                        name: "", // Add any other properties that are required by handleInputChange
+                      },
+                    } as React.ChangeEvent<HTMLInputElement>;
                     setSearchValue(option);
                     setOptions([]); // Clear options once a selection is made
+                    handleInputChange(mockEvent);
                   }}
                 >
                   {option}

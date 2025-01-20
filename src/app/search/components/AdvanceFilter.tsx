@@ -444,7 +444,13 @@ function AdvanceFilter() {
         {AdvanceFilterSubFilter[selectedsearchResultValue]?.map(
           (subFilter: SubFilter) => (
             <div
-              key={subFilter.name}
+              key={
+                subFilter.name +
+                7 +
+                subFilter.type +
+                subFilter.options +
+                "this is subfilter"
+              }
               className="cursor-pointer w-full flex flex-col gap-1  p-2"
             >
               <p
@@ -539,7 +545,7 @@ function AdvanceFilter() {
                     </label>
                   )}
                   {subFilter?.options?.map((option: Option) => (
-                    <>
+                    <div key={option.value + "this is option"}>
                       <label
                         key={option.value}
                         htmlFor={option.value}
@@ -569,7 +575,7 @@ function AdvanceFilter() {
                         )}
                         {option.name}
                       </label>
-                    </>
+                    </div>
                   ))}
                   {subFilter?.name === "Date Range" && (
                     <CustomCalendar

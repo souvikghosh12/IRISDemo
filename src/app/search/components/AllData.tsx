@@ -18,6 +18,7 @@ function AllData() {
     selectedOptions,
     SelectedData,
     SearchedValue,
+    setOnclickedRightSideData,
   } = useAuthContext();
   const [searchAllData, setSearchAllData] = useState({});
   const [loader, setLoader] = useState<boolean>(false);
@@ -96,6 +97,13 @@ function AllData() {
                     <div
                       key={index}
                       className="flex justify-between hover:cursor-pointer align-top border pt-3 pb-3 glass-morfing-effect border-gray-600 p-2 rounded-2xl"
+                      onClick={() => {
+                        setOnclickedRightSideData((prev) => ({
+                          ...prev,
+                          params: "People",
+                          id: item?.id,
+                        }));
+                      }}
                     >
                       <div className="flex gap-5">
                         <Image
@@ -168,6 +176,14 @@ function AllData() {
                     <div
                       key={index}
                       className="flex justify-between hover:cursor-pointer align-top border pt-3 pb-3 glass-morfing-effect border-gray-600 p-2 rounded-2xl"
+                    
+                      onClick={() => {
+                        setOnclickedRightSideData((prev) => ({
+                          ...prev,
+                          params: "Groups",
+                          id: item?.id,
+                        }));
+                      }}
                     >
                       <div className="flex gap-5">
                         <Image
@@ -236,12 +252,20 @@ function AllData() {
                 Messages ({(searchAllData as any)["messages"]?.count} of{" "}
                 {(searchAllData as any)["messages"]?.total_count} results)
               </h3>
-              <div className="flex flex-col gap-2 mt-2 ">
+              <div className="flex flex-col gap-2  ">
                 {(searchAllData as any)["messages"]?.Result?.slice(0, 3).map(
                   (item: any, index: number) => (
                     <div
                       key={index}
                       className="flex justify-between hover:cursor-pointer align-top border pt-2 pb-2 glass-morfing-effect border-gray-600 p-2 rounded-2xl"
+                      onClick={() => {
+                        setOnclickedRightSideData((prev) => ({
+                          ...prev,
+                          params: "Messages",
+                          id: item?.id,
+                        }));
+                      }}
+                    
                     >
                       <div className="">
                         <div className="">

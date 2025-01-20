@@ -15,3 +15,65 @@
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.358);
 }
+
+.css-lohd6h-MuiSvgIcon-root-MuiSelect-icon,
+.css-d551zc-MuiSvgIcon-root-MuiSelect-icon {
+  color: white !important;
+}
+
+.highlight {
+  background-color: yellow;
+}
+
+.join-grp-btn {
+  max-width: 292px;
+  height: 30px;
+  width: 100%;
+  background-color: #fff;
+  color: #108de5;
+  border: none;
+  border-radius: 4px;
+  font-family: Poppins, sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.personal-details-item {
+  color: #8e9dad;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 24px;
+  width: 100px;
+}
+
+.personal-details-item-p {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.image-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  background: #8e9dad;
+  border-radius: 10px;
+}
+
+.group-massage-section .image-section{
+  height: 140px !important;
+  margin-top: 0;
+}
+
+.full-image-section {
+  width: 100%;
+  height: 100%;
+  max-height: 500px;
+  object-fit:initial;
+}
